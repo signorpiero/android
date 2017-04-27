@@ -101,6 +101,12 @@ public class AuthenticatorActivityTest {
     private String testServerURL = null;
     private String testServerPort = null;
     private String testServerPortSecure = null;
+    private String testServerRedirect301URL = null;
+    private String testServerRedirect302URL = null;
+    private String testUser301 = null;
+    private String testUser302 = null;
+    private String testPassword301 = null;
+    private String testPassword302 = null;
     int trusted = -1;
 
     @Rule
@@ -129,6 +135,12 @@ public class AuthenticatorActivityTest {
         testServerURL = arguments.getString("TEST_SERVER_URL");
         testServerPort = arguments.getString("TEST_SERVER_PORT");
         testServerPortSecure = arguments.getString("TEST_SERVER_PORT_SECURE");
+        testServerRedirect301URL = arguments.getString("TEST_SERVER_301");
+        testServerRedirect302URL = arguments.getString("TEST_SERVER_302");
+        testUser301 = arguments.getString("TEST_USER_301");
+        testUser302 = arguments.getString("TEST_USER_301");
+        testPassword301 = arguments.getString("TEST_PASSWORD_301");
+        testPassword302 = arguments.getString("TEST_PASSWORD_302");
         trusted = Integer.parseInt(arguments.getString("TRUSTED"));
 
          // UiDevice available form API level 17
@@ -402,13 +414,38 @@ public class AuthenticatorActivityTest {
     }
 
     /**
+     *  Login with server URL in uppercase
+     */
+    @Test
+    public void test9_check_url_uppercase()
+            throws InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+
+        Log_OC.i(LOG_TAG, "Test Check URL Uppercase Start");
+
+        String connectionString = getConnectionString(testServerURL, testServerPort);
+
+        connectionString = connectionString.toUpperCase();
+
+        onView(withId(R.id.hostUrlInput))
+                .perform(replaceText(connectionString), closeSoftKeyboard());
+        onView(withId(R.id.account_username)).perform(click());
+
+        SystemClock.sleep(WAIT_CONNECTION);
+
+        onView(withId(R.id.server_status_text)).check(matches(withText(R.string.auth_nossl_plain_ok_title)));
+
+        Log_OC.i(LOG_TAG, "Test Check URL Uppercase Passed");
+
+    }
+
+    /**
      *  Login in https non-secure (self signed or expired certificate).
      *  Certified is not accepted (Negative test).
      *  Only executed in devices with API > 22
      */
     @Test
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.M)
-    public void test9_check_certif_not_secure_no_accept()
+    public void test10_check_certif_not_secure_no_accept()
             throws InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
 
 
@@ -454,7 +491,7 @@ public class AuthenticatorActivityTest {
      */
     @Test
     @SdkSuppress(minSdkVersion = Build.VERSION_CODES.M)
-    public void test_10_check_certif_not_secure()
+    public void test_11_check_certif_not_secure()
             throws InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
 
 
@@ -520,6 +557,80 @@ public class AuthenticatorActivityTest {
 
         }
     }
+
+    @Test
+    public void test_12_check_redirection_301()
+            throws InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+
+        Log_OC.i(LOG_TAG, "Test Check Redirection 301 Start");
+
+        if (testServerRedirect301URL != null) {
+
+            String connectionString = getConnectionString(testServerRedirect301URL, null);
+
+            // Check that login button is disabled
+            onView(withId(R.id.buttonOK)).check(matches(not(isEnabled())));
+
+            setFields(connectionString, testUser301, testPassword301);
+
+            // Check that the Activity ends after clicking
+            SystemClock.sleep(WAIT_LOGIN+4000);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
+                assertTrue(ERROR_MESSAGE, mActivityRule.getActivity().isDestroyed());
+            else {
+
+                Field f = Activity.class.getDeclaredField(RESULT_CODE);
+                f.setAccessible(true);
+                int mResultCode = f.getInt(mActivityRule.getActivity());
+                assertTrue(ERROR_MESSAGE, mResultCode == Activity.RESULT_OK);
+
+            }
+
+        }
+
+        Log_OC.i(LOG_TAG, "Test Check Redirection 301 Correct Passed");
+
+    }
+
+
+
+    /**
+     *  Login with a redirected server (302)
+     */
+    @Test
+    public void test_13_check_redirection_302()
+            throws InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+
+        Log_OC.i(LOG_TAG, "Test Check Redirection 302 Start");
+
+        if (testServerRedirect302URL != null) {
+
+            String connectionString = getConnectionString(testServerRedirect302URL, null);
+
+            // Check that login button is disabled
+            onView(withId(R.id.buttonOK)).check(matches(not(isEnabled())));
+
+            setFields(connectionString, testUser302, testPassword302);
+
+            // Check that the Activity ends after clicking
+            SystemClock.sleep(WAIT_LOGIN);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
+                assertTrue(ERROR_MESSAGE, mActivityRule.getActivity().isDestroyed());
+            else {
+
+                Field f = Activity.class.getDeclaredField(RESULT_CODE);
+                f.setAccessible(true);
+                int mResultCode = f.getInt(mActivityRule.getActivity());
+                assertTrue(ERROR_MESSAGE, mResultCode == Activity.RESULT_OK);
+
+            }
+
+        }
+
+        Log_OC.i(LOG_TAG, "Test Check Redirection 302 Correct Passed");
+
+    }
+
 
 
     private String getConnectionString (String url, String port){

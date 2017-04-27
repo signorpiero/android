@@ -91,6 +91,12 @@ android {
         testInstrumentationRunnerArgument "TEST_SERVER_URL", "\"$System.env.OCTEST_SERVER_BASE_URL\""
         testInstrumentationRunnerArgument "TEST_SERVER_PORT", "\"$System.env.OCTEST_SERVER_PORT\""
         testInstrumentationRunnerArgument "TEST_SERVER_PORT_SECURE", "\"$System.env.OCTEST_SERVER_PORT_SECURE\""
+        testInstrumentationRunnerArgument "TEST_SERVER_301", "\"$System.env.OCTEST_SERVER_301\""
+        testInstrumentationRunnerArgument "TEST_SERVER_302", "\"$System.env.OCTEST_SERVER_302\""
+        testInstrumentationRunnerArgument "TEST_USER_301", "\"$System.env.OCTEST_APP_USERNAME_301\""
+        testInstrumentationRunnerArgument "TEST_USER_302", "\"$System.env.OCTEST_APP_USERNAME_302\""
+        testInstrumentationRunnerArgument "TEST_PASSWORD_301", "\"$System.env.OCTEST_APP_PASSWORD_301\""
+        testInstrumentationRunnerArgument "TEST_PASSWORD_302", "\"$System.env.OCTEST_APP_PASSWORD_302\""
         testInstrumentationRunnerArgument "TRUSTED", "\"$System.env.OCTEST_SERVER_TRUSTED\""
 
         jackOptions {
